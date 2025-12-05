@@ -1,0 +1,238 @@
+name: 'SourceGuardian Action'
+description: 'Protects PHP scripts by compiling them with SourceGuardian.'
+author: 'Andrew Stoltz'
+inputs:
+  source:
+    description:
+      'The source directory or file mask to process (e.g., "src", "src/*.php").'
+    required: true
+  destination:
+    description:
+      'The output directory for encoded files. Source files remain unchanged.'
+    required: true
+  sourceguardian_path:
+    description:
+      'The directory containing the sourceguardian executable. Defaults to
+      searching the system PATH.'
+    required: false
+  phpversion:
+    description: |-
+      A multiline list of PHP versions to compile for (e.g., 8.3, 7.4+).
+      Defaults to 8.3.
+    required: false
+    default: '8.3'
+  expire:
+    description:
+      'Expiration date (dd/mm/yyyy) or period from now (e.g., 10d, 1d12h, 90m).'
+    required: false
+  domain:
+    description: |-
+      A multiline list of domain names to bind the script to.
+      Cannot be used with `domain-encrypt`.
+    required: false
+  domain-encrypt:
+    description: |-
+      Bind and encrypt script to a single domain name.
+      Cannot be used with `domain`.
+    required: false
+  domain-ignore-cli:
+    description: 'Ignore domain name check for CLI.'
+    required: false
+    default: 'false'
+  ip:
+    description: |-
+      A multiline list of IP addresses/masks to bind the script to.
+      Cannot be used with `ip-encrypt`.
+    required: false
+  ip-encrypt:
+    description: |-
+      Bind and encrypt script to a single IP address/mask.
+      Cannot be used with `ip`.
+    required: false
+  ip-ignore-cli:
+    description: 'Ignore IP check for CLI.'
+    required: false
+    default: 'false'
+  mac:
+    description: 'A multiline list of MAC addresses to bind the script to.'
+    required: false
+  machine-id:
+    description: |-
+      A multiline list of machine IDs to bind the script to.
+      Cannot be used with `machine-id-encrypt`.
+    required: false
+  machine-id-encrypt:
+    description: |-
+      Bind and encrypt script to a single machine ID.
+      Cannot be used with `machine-id`.
+    required: false
+  remote-verification-url:
+    description: 'URL for remote machine ID verification for CLI scripts.'
+    required: false
+  external:
+    description: |-
+      Comma-separated list of license filenames, paths, or URLs.
+      Requires `projid` and `projkey`. Cannot be used with other locking options.
+    required: false
+  conj:
+    description: 'Make scripts work only with other encoded files.'
+    required: false
+    default: 'false'
+  projid:
+    description: 'Project ID. Required when using `external`.'
+    required: false
+  projkey:
+    description:
+      'Project Key. Required when using `external`. Use a GitHub secret.'
+    required: false
+  time-server:
+    description:
+      'Comma-separated list of time servers for expiration checks (e.g.,
+      "pool.ntp.org,time.nist.gov").'
+    required: false
+  const:
+    description:
+      'A multiline list of custom defined constants (e.g., "name=value").'
+    required: false
+  catch:
+    description:
+      'A multiline list of custom error handlers (e.g.,
+      "ERR_EXPIRED=my_handler").'
+    required: false
+  auto-global:
+    description: 'A multiline list of custom auto-global variable names.'
+    required: false
+  asp-tags:
+    description: 'Enable the use of ASP-like <% %> tags.'
+    required: false
+    default: 'false'
+  no-short-tags:
+    description: 'Disable the use of short PHP <? ?> tags.'
+    required: false
+    default: 'false'
+  prepend-code:
+    description:
+      'Custom header code to add to the top of every encoded file (e.g., "code"
+      or "@file.php").'
+    required: false
+  loader-error-code:
+    description:
+      'Custom code to execute if the SourceGuardian loader is not found (e.g.,
+      "code" or "@file.php").'
+    required: false
+  no-default-starter:
+    description:
+      'Do not integrate the default starter code for loader discovery.'
+    required: false
+    default: 'false'
+  compression-level:
+    description: 'Compression level from 0 (fastest) to 9 (maximum).'
+    required: false
+  entangle:
+    description:
+      'PRO Entangling mode X with granularity Y (e.g., "7" or "7,4").'
+    required: false
+  compat:
+    description: 'Enable PHP 8.4+ compatibility mode.'
+    required: false
+    default: 'false'
+  eval-compatible:
+    description: 'Enable eval() compatibility for encoded scripts.'
+    required: false
+    default: 'false'
+  stop-on-error:
+    description: 'Stop encoding on the first critical error.'
+    required: false
+    default: 'false'
+  strict-errors:
+    description: 'Report E_STRICT compiler errors.'
+    required: false
+    default: 'false'
+  deprec-errors:
+    description: 'Report E_DEPRECATED PHP 5.3+ compiler errors.'
+    required: false
+    default: 'false'
+  keep-file-date:
+    description: 'Keep the original modification date for encoded files.'
+    required: false
+    default: 'false'
+  keep-doc-comments:
+    description: 'Keep doc comments within encoded files.'
+    required: false
+    default: 'false'
+  backup:
+    description:
+      'Set backup file extension (e.g., "bak") or set to `false` to disable
+      backups.'
+    required: false
+  recursive:
+    description:
+      'Recursively process files. Set to `false` to disable. Set to a number > 0
+      to strip that many directories from the target path.'
+    required: false
+    default: '0'
+  files_to_exclude:
+    description:
+      'A multiline list of file masks to exclude from processing entirely.'
+    required: false
+  files_to_encode:
+    description: |-
+      A multiline list of file masks to encode as PHP.
+      If used, other files matching the source are copied as-is.
+    required: false
+  files_to_encode_as_custom:
+    description:
+      'A multiline list of file masks to encode as custom non-PHP files.'
+    required: false
+  files_to_copy:
+    description: 'A multiline list of file masks to copy without encoding.'
+    required: false
+  encode-newer-than:
+    description:
+      'Only encode files newer than the specified date/time (YYYYMMDDhhmmss).'
+    required: false
+  ignore-symlinks:
+    description: 'Ignore symlinks while recursively scanning directories.'
+    required: false
+    default: 'false'
+  verbose:
+    description:
+      'Set verbosity level: 0 (quiet), 1 (errors only), 2 (encoding log).'
+    required: false
+    default: '2'
+  docker-socket:
+    description:
+      'Path to the mapped docker socket for installing to a Docker container.'
+    required: false
+  license-file:
+    description: 'Path to the license file.'
+    required: false
+  show-license-info:
+    description: 'Output license information after encoding.'
+    required: false
+    default: 'true'
+  license-release:
+    description:
+      'Release the license for this installation after encoding. Cannot be used
+      with `license-dynamic`.'
+    required: false
+    default: 'false'
+  license-dynamic:
+    description: 'Request a dynamic license. Requires username and password.'
+    required: false
+    default: 'false'
+  license-username:
+    description: 'The username for a dynamic license request.'
+    required: false
+  license-password:
+    description:
+      'The password for a dynamic license request. Use a GitHub secret.'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+outputs:
+  sourceguardian_version:
+    description: 'The version of the SourceGuardian encoder used.'
+  sourceguardian_license:
+    description: 'The license information for the SourceGuardian installation.'
