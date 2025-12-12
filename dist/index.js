@@ -27344,14 +27344,29 @@ async function run() {
             ? require$$1.join(sourceguardianPath, 'sourceguardian')
             : 'sourceguardian';
         let versionOutput = '';
-        await execExports.exec(executable, ['-v'], {
+        let versionError = '';
+        const exitCode = await execExports.exec(executable, ['-v'], {
             listeners: {
                 stdout: (data) => {
                     versionOutput += data.toString();
+                },
+                stderr: (data) => {
+                    versionError += data.toString();
                 }
-            }
+            },
+            ignoreReturnCode: true
         });
-        coreExports.setOutput('sourceguardian_version', versionOutput.trim());
+        if (exitCode === 127) {
+            throw new Error(`SourceGuardian not found at ${executable}. Please specify 'sourceguardian_path' if it is not in the system's PATH.`);
+        }
+        const trimmedVersionOutput = versionOutput.trim();
+        if (!trimmedVersionOutput.includes('SourceGuardian')) {
+            coreExports.warning(`Could not verify SourceGuardian version. Exit code: ${exitCode}. Output: "${trimmedVersionOutput}". Stderr: "${versionError.trim()}"`);
+        }
+        if (entangle && !trimmedVersionOutput.includes('PRO')) {
+            throw new Error('The `entangle` option is only available in SourceGuardian PRO.');
+        }
+        coreExports.setOutput('sourceguardian_version', trimmedVersionOutput);
         const args = [];
         phpversions.forEach((version) => {
             args.push('--phpversion', version);
@@ -27519,13 +27534,17 @@ async function run() {
         await execExports.exec(executable, args);
         if (showLicenseInfo) {
             let licenseOutput = '';
-            await execExports.exec(executable, ['--license'], {
+            const licenseExitCode = await execExports.exec(executable, ['--license'], {
                 listeners: {
                     stdout: (data) => {
                         licenseOutput += data.toString();
                     }
-                }
+                },
+                ignoreReturnCode: true
             });
+            if (licenseExitCode === 127) {
+                throw new Error(`SourceGuardian not found at ${executable} during license check.`);
+            }
             coreExports.setOutput('sourceguardian_license', licenseOutput.trim());
         }
         if (licenseRelease) {

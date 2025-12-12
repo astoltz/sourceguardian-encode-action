@@ -106,14 +106,40 @@ export async function run(): Promise<void> {
       : 'sourceguardian'
 
     let versionOutput = ''
-    await exec.exec(executable, ['-v'], {
+    let versionError = ''
+    const exitCode = await exec.exec(executable, ['-v'], {
       listeners: {
         stdout: (data: Buffer) => {
           versionOutput += data.toString()
+        },
+        stderr: (data: Buffer) => {
+          versionError += data.toString()
         }
-      }
+      },
+      ignoreReturnCode: true
     })
-    core.setOutput('sourceguardian_version', versionOutput.trim())
+
+    if (exitCode === 127) {
+      throw new Error(
+        `SourceGuardian not found at ${executable}. Please specify 'sourceguardian_path' if it is not in the system's PATH.`
+      )
+    }
+
+    const trimmedVersionOutput = versionOutput.trim()
+
+    if (!trimmedVersionOutput.includes('SourceGuardian')) {
+      core.warning(
+        `Could not verify SourceGuardian version. Exit code: ${exitCode}. Output: "${trimmedVersionOutput}". Stderr: "${versionError.trim()}"`
+      )
+    }
+
+    if (entangle && !trimmedVersionOutput.includes('PRO')) {
+      throw new Error(
+        'The `entangle` option is only available in SourceGuardian PRO.'
+      )
+    }
+
+    core.setOutput('sourceguardian_version', trimmedVersionOutput)
 
     const args: string[] = []
 
@@ -296,13 +322,20 @@ export async function run(): Promise<void> {
 
     if (showLicenseInfo) {
       let licenseOutput = ''
-      await exec.exec(executable, ['--license'], {
+      const licenseExitCode = await exec.exec(executable, ['--license'], {
         listeners: {
           stdout: (data: Buffer) => {
             licenseOutput += data.toString()
           }
-        }
+        },
+        ignoreReturnCode: true
       })
+
+      if (licenseExitCode === 127) {
+        throw new Error(
+          `SourceGuardian not found at ${executable} during license check.`
+        )
+      }
       core.setOutput('sourceguardian_license', licenseOutput.trim())
     }
 
