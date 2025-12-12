@@ -14,7 +14,7 @@ const config = {
     sourcemap: true
   },
   plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs()],
-  external: ['@actions/core', '@actions/exec', 'path']
+  external: []
 }
 
 export default config
